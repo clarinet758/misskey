@@ -169,21 +169,3 @@ export interface IAnnounce extends IActivity {
 export interface IBlock extends IActivity {
 	type: 'Block';
 }
-
-export type Object =
-	ICollection |
-	IOrderedCollection |
-	ICollectionPage |
-	IOrderedCollectionPage |
-	ICreate |
-	IDelete |
-	IUpdate |
-	IUndo |
-	IFollow |
-	IAccept |
-	IReject |
-	IAdd |
-	IRemove |
-	ILike |
-	IAnnounce |
-	IBlock;
