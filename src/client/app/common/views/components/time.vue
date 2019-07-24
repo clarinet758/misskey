@@ -15,7 +15,7 @@ export default Vue.extend({
 	props: {
 		time: {
 			type: [Date, String],
-			required: true
+			required: false
 		},
 		mode: {
 			type: String,
@@ -29,15 +29,23 @@ export default Vue.extend({
 		};
 	},
 	computed: {
-		_time(): Date {
-			return typeof this.time == 'string' ? new Date(this.time) : this.time;
+		_time(): Date | null {
+			if (typeof this.time === 'string') {
+				try {
+					return new Date(this.time);
+				} catch {
+					return null;
+				}
+			} else {
+				return this.time;
+			}
 		},
 		absolute(): string {
-			return this._time.toLocaleString();
+			return this._time ? this._time.toLocaleString() : this.$t('@.time.unknown')
 		},
 		relative(): string {
-			const time = this._time;
-			const ago = (this.now.getTime() - time.getTime()) / 1000/*ms*/;
+			if (!this._time) return this.$t('@.time.unknown');
+			const ago = (this.now.getTime() - this._time.getTime()) / 1000/*ms*/;
 			return (
 				ago >= 31536000 ? this.$t('@.time.years_ago')  .replace('{}', (~~(ago / 31536000)).toString()) :
 				ago >= 2592000  ? this.$t('@.time.months_ago') .replace('{}', (~~(ago / 2592000)).toString()) :
@@ -46,9 +54,8 @@ export default Vue.extend({
 				ago >= 3600     ? this.$t('@.time.hours_ago')  .replace('{}', (~~(ago / 3600)).toString()) :
 				ago >= 60       ? this.$t('@.time.minutes_ago').replace('{}', (~~(ago / 60)).toString()) :
 				ago >= 10       ? this.$t('@.time.seconds_ago').replace('{}', (~~(ago % 60)).toString()) :
-				ago >= -1       ? this.$t('@.time.just_now') :
-				ago <  -1       ? this.$t('@.time.future') :
-				this.$t('@.time.unknown'));
+				ago >= -10      ? this.$t('@.time.just_now') :
+				this.$t('@.time.future');
 		}
 	},
 	created() {
