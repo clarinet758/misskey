@@ -1,25 +1,9 @@
 <template>
-<div class="explore67">
-	<div class="localfediz" v-if="meta && stats" :style="{ backgroundImage: meta.bannerUrl ? `url(${meta.bannerUrl})` : null }">
+<div>
+	<div class="localfedi7" v-if="meta && stats && tag == null" :style="{ backgroundImage: meta.bannerUrl ? `url(${meta.bannerUrl})` : null }">
 		<header>{{ $t('explore', { host: meta.name }) }}</header>
 		<div>{{ $t('users-info', { users: num(stats.originalUsersCount) }) }}</div>
 	</div>
-
-	<ui-container :body-togglable="true" :expanded="false" ref="tags">
-		<template #header><fa :icon="faHashtag" fixed-width/>{{ $t('popular-tags') }}</template>
-
-		<div class="vxjfqztj">
-			<router-link v-for="tag in tagsLocal" :to="`/explore/tags/${tag.tag}`" :key="'local:' + tag.tag" class="local">{{ tag.tag }}</router-link>
-			<router-link v-for="tag in tagsRemote" :to="`/explore/tags/${tag.tag}`" :key="'remote:' + tag.tag">{{ tag.tag }}</router-link>
-		</div>
-	</ui-container>
-
-	<mk-user-list v-if="tag != null" :make-promise="tagUsers" :key="`${tag}-local`">
-		<fa :icon="faHashtag" fixed-width/>{{ tag }}
-	</mk-user-list>
-	<mk-user-list v-if="tag != null" :make-promise="tagRemoteUsers" :key="`${tag}-remote`">
-		<fa :icon="faHashtag" fixed-width/>{{ tag }} ({{ $t('federated') }})
-	</mk-user-list>
 
 	<template v-if="tag == null">
 		<mk-user-list :make-promise="verifiedUsers" :expanded="false">
@@ -36,9 +20,22 @@
 		</mk-user-list>
 	</template>
 
-	<div class="localfediz">
-		<header>{{ $t('explore-fedi') }}</header>
+	<div class="localfedi7" v-if="tag == null">
+		<header>{{ $t('explore-fediverse') }}</header>
 	</div>
+
+	<ui-container :body-togglable="true" :expanded="false" ref="tags">
+		<template #header><fa :icon="faHashtag" fixed-width/>{{ $t('popular-tags') }}</template>
+
+		<div class="vxjfqztj">
+			<router-link v-for="tag in tagsLocal" :to="`/explore/tags/${tag.tag}`" :key="'local:' + tag.tag" class="local">{{ tag.tag }}</router-link>
+			<router-link v-for="tag in tagsRemote" :to="`/explore/tags/${tag.tag}`" :key="'remote:' + tag.tag">{{ tag.tag }}</router-link>
+		</div>
+	</ui-container>
+
+	<mk-user-list v-if="tag != null" :make-promise="tagUsers" :key="`${tag}`">
+		<fa :icon="faHashtag" fixed-width/>{{ tag }}
+	</mk-user-list>
 
 	<template v-if="tag == null">
 		<mk-user-list :make-promise="recommendedUsers" :expanded="false">
@@ -127,17 +124,6 @@ export default Vue.extend({
 			return () => this.$root.api('hashtags/users', {
 				tag: this.tag,
 				state: 'alive',
-				origin: 'local',
-				sort: '+follower',
-				limit: 30
-			});
-		},
-
-		tagRemoteUsers(): () => Promise<any> {
-			return () => this.$root.api('hashtags/users', {
-				tag: this.tag,
-				state: 'alive',
-				origin: 'remote',
 				sort: '+follower',
 				limit: 30
 			});
@@ -180,10 +166,7 @@ export default Vue.extend({
 </script>
 
 <style lang="stylus" scoped>
-.explore67
-		margin-top -16px
-
-.localfediz
+.localfedi7
 	overflow hidden
 	background var(--face)
 	color #fff
@@ -203,6 +186,9 @@ export default Vue.extend({
 	> div
 		font-size 14px
 		opacity 0.8
+
+.localfedi7:first-child
+	margin-top 0
 
 .vxjfqztj
 	padding 16px

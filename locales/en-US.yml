@@ -340,6 +340,7 @@ common/views/pages/explore.vue:
   popular-tags: "Popular Tags"
   federated: "From the fediverse"
   explore: "Explore {host}"
+  explore-fediverse: "Explore fediverse"
   users-info: "Currently, {users} users are registered here"
 common/views/components/url-preview.vue:
   enable-player: "Enable playback"

@@ -358,6 +358,7 @@ common/views/pages/explore.vue:
   popular-tags: "人気のタグ"
   federated: "連合"
   explore: "{host}を探索"
+  explore-fediverse: "Fediverseを探索"
   users-info: "現在{users}ユーザーが登録されています"
 
 common/views/components/url-preview.vue:
