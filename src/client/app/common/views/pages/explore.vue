@@ -45,7 +45,7 @@
 			<fa :icon="faCommentAlt" fixed-width/>{{ $t('recently-updated-users') }}
 		</mk-user-list>
 		<mk-user-list :make-promise="recentlyRegisteredUsersF" :expanded="false">
-			<fa :icon="faPlus" fixed-width/>{{ $t('recently-registered-users') }}
+			<fa :icon="faPlus" fixed-width/>{{ $t('recently-found-users') }}
 		</mk-user-list>
 	</template>
 </div>
