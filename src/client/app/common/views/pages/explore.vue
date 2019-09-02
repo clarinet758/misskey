@@ -1,15 +1,11 @@
 <template>
-<div>
-	<ui-container :show-header="false" v-if="meta && stats">
-		<div class="kpdsmpnk" :style="{ backgroundImage: meta.bannerUrl ? `url(${meta.bannerUrl})` : null }">
-			<div>
-				<router-link to="/explore" class="title">{{ $t('explore', { host: meta.name }) }}</router-link>
-				<span>{{ $t('users-info', { users: num(stats.originalUsersCount) }) }}</span>
-			</div>
-		</div>
-	</ui-container>
+<div class="explore67">
+	<div class="localfediz" v-if="meta && stats" :style="{ backgroundImage: meta.bannerUrl ? `url(${meta.bannerUrl})` : null }">
+		<header>{{ $t('explore', { host: meta.name }) }}</header>
+		<div>{{ $t('users-info', { users: num(stats.originalUsersCount) }) }}</div>
+	</div>
 
-	<ui-container :body-togglable="true" :expanded="tag == null" ref="tags">
+	<ui-container :body-togglable="true" :expanded="false" ref="tags">
 		<template #header><fa :icon="faHashtag" fixed-width/>{{ $t('popular-tags') }}</template>
 
 		<div class="vxjfqztj">
@@ -26,19 +22,32 @@
 	</mk-user-list>
 
 	<template v-if="tag == null">
-		<mk-user-list :make-promise="verifiedUsers">
+		<mk-user-list :make-promise="verifiedUsers" :expanded="false">
 			<fa :icon="faBookmark" fixed-width/>{{ $t('verified-users') }}
 		</mk-user-list>
-		<mk-user-list :make-promise="popularUsers">
+		<mk-user-list :make-promise="popularUsers" :expanded="false">
 			<fa :icon="faChartLine" fixed-width/>{{ $t('popular-users') }}
 		</mk-user-list>
-		<mk-user-list :make-promise="recommendedUsers">
-			<fa icon="users" fixed-width/>{{ $t('recommended-users') }}
-		</mk-user-list>
-		<mk-user-list :make-promise="recentlyUpdatedUsers">
+		<mk-user-list :make-promise="recentlyUpdatedUsers" :expanded="false">
 			<fa :icon="faCommentAlt" fixed-width/>{{ $t('recently-updated-users') }}
 		</mk-user-list>
-		<mk-user-list :make-promise="recentlyRegisteredUsers">
+		<mk-user-list :make-promise="recentlyRegisteredUsers" :expanded="false">
+			<fa :icon="faPlus" fixed-width/>{{ $t('recently-registered-users') }}
+		</mk-user-list>
+	</template>
+
+	<div class="localfediz">
+		<header>{{ $t('explore-fedi') }}</header>
+	</div>
+
+	<template v-if="tag == null">
+		<mk-user-list :make-promise="recommendedUsers" :expanded="false">
+			<fa icon="users" fixed-width/>{{ $t('recommended-users') }}
+		</mk-user-list>
+		<mk-user-list :make-promise="recentlyUpdatedUsersF" :expanded="false">
+			<fa :icon="faCommentAlt" fixed-width/>{{ $t('recently-updated-users') }}
+		</mk-user-list>
+		<mk-user-list :make-promise="recentlyRegisteredUsersF" :expanded="false">
 			<fa :icon="faPlus" fixed-width/>{{ $t('recently-registered-users') }}
 		</mk-user-list>
 	</template>
@@ -58,6 +67,12 @@ export default Vue.extend({
 		tag: {
 			type: String,
 			required: false
+		}
+	},
+
+	inject: {
+		inNakedDeckColumn: {
+			default: false
 		}
 	},
 
@@ -85,6 +100,15 @@ export default Vue.extend({
 			}),
 			recentlyRegisteredUsers: () => this.$root.api('users', {
 				origin: 'local',
+				state: 'alive',
+				sort: '+createdAt',
+				limit: 10
+			}),
+			recentlyUpdatedUsersF: () => this.$root.api('users', {
+				sort: '+updatedAt',
+				limit: 10
+			}),
+			recentlyRegisteredUsersF: () => this.$root.api('users', {
 				state: 'alive',
 				sort: '+createdAt',
 				limit: 10
@@ -156,6 +180,30 @@ export default Vue.extend({
 </script>
 
 <style lang="stylus" scoped>
+.explore67
+		margin-top -16px
+
+.localfediz
+	overflow hidden
+	background var(--face)
+	color #fff
+	text-shadow 0 0 8px #000
+	border-radius 6px
+	padding 16px
+	margin-top 16px
+	margin-bottom 16px
+	min-height 80x
+	background-position 50%
+	background-size cover
+
+	> header
+		font-size 20px
+		font-weight bold
+
+	> div
+		font-size 14px
+		opacity 0.8
+
 .vxjfqztj
 	padding 16px
 
