@@ -1,19 +1,19 @@
-import { User, IRemoteUser } from '../../models/entities/user';
-import { ApItem, getApIds } from './type';
-import Resolver from './resolver';
-import { resolvePerson } from './models/person';
-import { unique, concat } from '../../prelude/array';
+import { User, IRemoteUser } from '../../../models/entities/user';
+import { ApItem, getApIds } from '../type';
+import Resolver from '../resolver';
+import { resolvePerson } from './person';
+import { unique, concat } from '../../../prelude/array';
 import * as promiseLimit from 'promise-limit';
 
 type Visibility = 'public' | 'home' | 'followers' | 'specified';
 
-type VisibilityInfo = {
+type AudienceInfo = {
 	visibility: Visibility,
 	mentionedUsers: User[],
 	visibleUsers: User[],
 };
 
-export async function parseAudience(actor: IRemoteUser, to: ApItem | undefined, cc: ApItem | undefined, resolver?: Resolver): Promise<VisibilityInfo> {
+export async function parseAudience(actor: IRemoteUser, to: ApItem | undefined, cc: ApItem | undefined, resolver?: Resolver): Promise<AudienceInfo> {
 	const toGroups = groupingAudience(getApIds(to), actor);
 	const ccGroups = groupingAudience(getApIds(cc), actor);
 

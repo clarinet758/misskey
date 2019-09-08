@@ -6,7 +6,7 @@ import { fetchNote, resolveNote } from '../../models/note';
 import { apLogger } from '../../logger';
 import { extractDbHost } from '../../../../misc/convert-host';
 import { fetchMeta } from '../../../../misc/fetch-meta';
-import { parseAudience } from '../../audience';
+import { parseAudience } from '../../models/audience';
 
 const logger = apLogger;
 

@@ -21,7 +21,7 @@ import { Emoji } from '../../../models/entities/emoji';
 import { genId } from '../../../misc/gen-id';
 import { fetchMeta } from '../../../misc/fetch-meta';
 import { ensure } from '../../../prelude/ensure';
-import { parseAudience } from '../audience';
+import { parseAudience } from './audience';
 
 const logger = apLogger;
 
