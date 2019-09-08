@@ -1,4 +1,5 @@
 export type obj = { [x: string]: any };
+export type ApItem = IObject | string | (IObject | string)[];
 
 export interface IObject {
 	'@context': string | obj | obj[];
@@ -6,9 +7,9 @@ export interface IObject {
 	id?: string;
 	summary?: string;
 	published?: string;
-	cc?: IObject | string | (IObject | string)[];
-	to?: IObject | string | (IObject | string)[];
-	attributedTo: IObject | string | (IObject | string)[];
+	cc?: ApItem;
+	to?: ApItem;
+	attributedTo: ApItem;
 	attachment?: any[];
 	inReplyTo?: any;
 	replies?: ICollection;
@@ -26,7 +27,7 @@ export interface IObject {
 /**
  * Get array of ActivityStreams Objects id
  */
-export function getApIds(value: IObject | string | (IObject | string)[] | undefined): string[] {
+export function getApIds(value: ApItem | undefined): string[] {
 	if (value == null) return [];
 	const array = Array.isArray(value) ? value : [value];
 	return array.map(x => getApId(x));
@@ -35,7 +36,7 @@ export function getApIds(value: IObject | string | (IObject | string)[] | undefi
 /**
  * Get first ActivityStreams Object id
  */
-export function getOneApId(value: IObject | string | (IObject | string)[]): string {
+export function getOneApId(value: ApItem): string {
 	const firstOne = Array.isArray(value) ? value[0] : value;
 	return getApId(firstOne);
 }
