@@ -13,6 +13,7 @@
 	}
 
 	const langs = LANGS;
+	const env = ENV;
 
 	//#region Apply theme
 	const theme = localStorage.getItem('theme');
@@ -74,7 +75,7 @@
 	const cachedLocale = localStorage.getItem('locale');
 	const localeKey = localStorage.getItem('localeKey');
 
-	if (cachedLocale == null || localeKey != `${ver}.${lang}`) {
+	if (cachedLocale == null || localeKey != `${ver}.${lang}` || env !== 'production') {
 		const locale = await fetch(`/assets/locales/${lang}.json?ver=${ver}`)
 			.then(response => response.json());
 
