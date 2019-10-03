@@ -3,7 +3,6 @@
  */
 
 import * as os from 'os';
-import ms = require('ms');
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as send from 'koa-send';
@@ -23,6 +22,8 @@ import { genOpenapiSpec } from '../api/openapi/gen-spec';
 import { getAtomFeed } from './feed/atom';
 import { getRSSFeed } from './feed/rss';
 import { getJSONFeed } from './feed/json';
+
+const env = process.env.NODE_ENV;
 
 const client = `${__dirname}/../../client/`;
 
@@ -53,9 +54,14 @@ const router = new Router();
 //#region static assets
 
 router.get('/assets/*', async ctx => {
+	if (env !== 'production') {
+		ctx.set('Cache-Control', 'no-store');
+	} else {
+		ctx.set('Cache-Control', 'max-age=604800');
+	}
+
 	await send(ctx as any, ctx.path, {
-		root: client,
-		maxage: ms('7 days'),
+		root: client
 	});
 });
 
