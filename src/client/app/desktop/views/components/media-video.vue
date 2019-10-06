@@ -60,6 +60,8 @@ export default Vue.extend({
 			this.$once('hook:beforeDestroy', () => {
 				viewer.close();
 			});
+
+			this.$router.push({ hash: `#modal-${window.scrollY}` });
 		}
 	}
 })

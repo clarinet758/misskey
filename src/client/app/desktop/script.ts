@@ -174,7 +174,13 @@ init(async (launch, os) => {
 			{ path: '*', component: MkNotFound }
 		],
 		scrollBehavior(to, from, savedPosition) {
-			return { x: 0, y: 0 };
+			let y = 0;
+
+			const hash = to.hash || from.hash || '';
+			const m = hash.match(/^#modal-(\d+)/);
+			if (m) y = Number(m[1]);
+
+			return { x: 0, y };
 		}
 	});
 

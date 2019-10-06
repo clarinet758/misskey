@@ -22,6 +22,13 @@ export default Vue.extend({
 		if (this.start) videoTag.currentTime = this.start
 		videoTag.volume = this.$store.state.device.mediaVolume;
 	},
+	watch:{
+		$route(to, from) {
+			if (!to.hash) {
+				this.destroyDom();
+			}
+		}
+	},
 	computed: {
 		keymap(): any {
 			return {
@@ -36,7 +43,10 @@ export default Vue.extend({
 				opacity: 0,
 				duration: 100,
 				easing: 'linear',
-				complete: () => this.destroyDom()
+				complete: () => {
+					this.destroyDom();
+					this.$router.push({ hash: '' });
+				}
 			});
 		},
 		volumechange() {
