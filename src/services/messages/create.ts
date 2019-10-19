@@ -72,7 +72,11 @@ export async function createMessage(user: IUser, recipient: IUser, text: string,
 			text: message.text,
 			userId: message.userId,
 			visibility: 'specified',
-			visibleUserIds: [ message.recipientId ]
+			mentionedRemoteUsers: [ {
+				uri: recipient.uri,
+				username: recipient.username,
+				host: recipient.host
+			} ],
 		} as INote;
 
 		const activity = renderActivity(renderCreate(await renderNote(note, false, true), note));
