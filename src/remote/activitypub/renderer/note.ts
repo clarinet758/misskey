@@ -9,7 +9,7 @@ import User from '../../../models/user';
 import toHtml from '../misc/get-note-html';
 import Emoji, { IEmoji } from '../../../models/emoji';
 
-export default async function renderNote(note: INote, dive = true): Promise<any> {
+export default async function renderNote(note: INote, dive = true, isTalk = false): Promise<any> {
 	const promisedFiles: Promise<IDriveFile[]> = note.fileIds
 		? DriveFile.find({ _id: { $in: note.fileIds } })
 		: Promise.resolve([]);
@@ -154,6 +154,10 @@ export default async function renderNote(note: INote, dive = true): Promise<any>
 		}))
 	} : {};
 
+	const asTalk = isTalk ? {
+		_misskey_talk: true
+	} : {};
+
 	return {
 		id: `${config.url}/notes/${note._id}`,
 		type: 'Note',
@@ -169,7 +173,8 @@ export default async function renderNote(note: INote, dive = true): Promise<any>
 		attachment: files.map(renderDocument),
 		sensitive: note.cw != null || files.some(file => file.metadata.isSensitive),
 		tag,
-		...asPoll
+		...asPoll,
+		...asTalk
 	};
 }
 
