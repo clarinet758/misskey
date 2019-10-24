@@ -45,6 +45,8 @@ export type Source = {
 
 	deliverJobConcurrency?: number;
 	inboxJobConcurrency?: number;
+
+	userAgent?: string;
 };
 
 export type DriveConfig = {

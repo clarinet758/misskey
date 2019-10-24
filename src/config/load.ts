@@ -40,7 +40,7 @@ export default function load() {
 	mixin.apiUrl = `${mixin.scheme}://${mixin.host}/api`;
 	mixin.authUrl = `${mixin.scheme}://${mixin.host}/auth`;
 	mixin.driveUrl = `${mixin.scheme}://${mixin.host}/files`;
-	mixin.userAgent = `Misskey/${meta.version} (${config.url})`;
+	mixin.userAgent = config.userAgent || `Misskey/${meta.version} (${config.url})`;
 
 	if (config.autoAdmin == null) config.autoAdmin = false;
 
