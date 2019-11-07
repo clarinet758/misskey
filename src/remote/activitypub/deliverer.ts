@@ -1,4 +1,4 @@
-import { isRemoteUser, ILocalUser, IRemoteUser, IUser, isLocalUser } from '../../models/user';
+import { isRemoteUser, IRemoteUser, IUser, isLocalUser, ILocalUser } from '../../models/user';
 import Following from '../../models/following';
 import { deliver } from '../../queue';
 
@@ -44,11 +44,11 @@ export async function deliverToUser(actor: ILocalUser, activity: any, to: IRemot
 }
 
 export default class Deliverer {
-	private actor: ILocalUser;
+	private actor: IUser;
 	private activity: any;
 	private queues: IQueue[] = [];
 
-	constructor(actor: ILocalUser, activity: any) {
+	constructor(actor: IUser, activity: any) {
 		this.actor = actor;
 		this.activity = activity;
 	}
@@ -79,6 +79,8 @@ export default class Deliverer {
 	 */
 	public async execute() {
 		const inboxes: string[] = [];
+
+		if (!isLocalUser(this.actor)) return;
 
 		// build inbox list
 		for (const queue of this.queues) {

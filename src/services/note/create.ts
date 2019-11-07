@@ -3,7 +3,7 @@ import Note, { pack, INote, IChoice } from '../../models/note';
 import User, { isLocalUser, IUser, isRemoteUser, IRemoteUser, ILocalUser } from '../../models/user';
 import { publishMainStream, publishHomeTimelineStream, publishLocalTimelineStream, publishHybridTimelineStream, publishGlobalTimelineStream, publishUserListStream, publishHashtagStream, publishNoteStream } from '../stream';
 import Following from '../../models/following';
-import { deliver, createDeleteNoteJob } from '../../queue';
+import { createDeleteNoteJob } from '../../queue';
 import renderNote from '../../remote/activitypub/renderer/note';
 import renderCreate from '../../remote/activitypub/renderer/create';
 import renderAnnounce from '../../remote/activitypub/renderer/announce';
@@ -36,6 +36,7 @@ import extractEmojis from '../../misc/extract-emojis';
 import extractHashtags from '../../misc/extract-hashtags';
 import { genId } from '../../misc/gen-id';
 import { toDbHost } from '../../misc/convert-host';
+import Deliverer, { deliverToFollowers } from '../../remote/activitypub/deliverer';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention' | 'highlight';
 
@@ -318,6 +319,8 @@ export default async (user: IUser, data: Option, silent = false) => new Promise<
 
 	const noteActivity = await renderNoteOrRenoteActivity(data, note, user);
 
+	const deliverer = new Deliverer(user, noteActivity);
+
 	// Extended notification
 	if (note.visibility === 'public' || note.visibility === 'home') {
 		nmRelatedPromises.push(notifyExtended(note.text, nm));
@@ -343,8 +346,8 @@ export default async (user: IUser, data: Option, silent = false) => new Promise<
 	// mention
 	createMentionedEvents(mentionedUsers, note, nm);
 
-	if (isLocalUser(user)) {
-		deliverNoteToMentionedRemoteUsers(mentionedUsers, user, noteActivity);
+	for (const u of mentionedUsers.filter(u => isRemoteUser(u))) {
+		deliverer.addDirectQueue(u as IRemoteUser);
 	}
 
 	// If it is renote
@@ -381,11 +384,27 @@ export default async (user: IUser, data: Option, silent = false) => new Promise<
 
 	if (!silent) {
 		publish(user, note, noteObj, data.reply, data.renote, data.visibleUsers, noteActivity);
+
+		// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
+		if (data.reply && isRemoteUser(data.reply._user)) {
+			deliverer.addDirectQueue(data.reply._user);
+		}
+
+		// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
+		if (data.renote && isRemoteUser(data.renote._user)) {
+			deliverer.addDirectQueue(data.renote._user);
+		}
+
+		if (['public', 'home', 'followers'].includes(note.visibility)) {
+			deliverer.addFollowersQueue();
+		}
 	}
 
 	Promise.all(nmRelatedPromises).then(() => {
 		nm.deliver();
 	});
+
+	deliverer.execute();
 
 	// Register to search database
 	index(note);
@@ -427,16 +446,6 @@ function incRenoteCount(renote: INote) {
 
 async function publish(user: IUser, note: INote, noteObj: any, reply: INote, renote: INote, visibleUsers: IUser[], noteActivity: any) {
 	if (isLocalUser(user)) {
-		// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
-		if (reply && isRemoteUser(reply._user)) {
-			deliver(user, noteActivity, reply._user.inbox);
-		}
-
-		// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
-		if (renote && isRemoteUser(renote._user)) {
-			deliver(user, noteActivity, renote._user.inbox);
-		}
-
 		if (['followers', 'specified'].includes(note.visibility)) {
 			const detailPackedNote = await pack(note, user, {
 				detail: true
@@ -662,8 +671,6 @@ async function publishToFollowers(note: INote, user: IUser, noteActivity: any) {
 		followerId: { $ne: note.userId }	// バグでフォロワーに自分がいることがあるため
 	});
 
-	const queue: string[] = [];
-
 	for (const following of followers) {
 		const follower = following._follower;
 
@@ -678,23 +685,7 @@ async function publishToFollowers(note: INote, user: IUser, noteActivity: any) {
 			if (isRemoteUser(user) || note.visibility != 'public') {
 				publishHybridTimelineStream(following.followerId, detailPackedNote);
 			}
-		} else {
-			// フォロワーがリモートユーザーかつ投稿者がローカルユーザーなら投稿を配信
-			if (isLocalUser(user)) {
-				const inbox = follower.sharedInbox || follower.inbox;
-				if (!queue.includes(inbox)) queue.push(inbox);
-			}
 		}
-	}
-
-	for (const inbox of queue) {
-		deliver(user as any, noteActivity, inbox);
-	}
-}
-
-function deliverNoteToMentionedRemoteUsers(mentionedUsers: IUser[], user: ILocalUser, noteActivity: any) {
-	for (const u of mentionedUsers.filter(u => isRemoteUser(u))) {
-		deliver(user, noteActivity, (u as IRemoteUser).inbox);
 	}
 }
 
