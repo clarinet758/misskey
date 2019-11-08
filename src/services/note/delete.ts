@@ -16,7 +16,7 @@ import { registerOrFetchInstanceDoc } from '../register-or-fetch-instance-doc';
 import Instance from '../../models/instance';
 import instanceChart from '../../services/chart/instance';
 import Favorite from '../../models/favorite';
-import { deliverToFollowers } from '../../remote/activitypub/deliverer';
+import { deliverToFollowers } from '../../remote/activitypub/deliver-manager';
 
 /**
  * 投稿を削除します。

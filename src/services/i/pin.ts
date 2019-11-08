@@ -6,7 +6,7 @@ import renderAdd from '../../remote/activitypub/renderer/add';
 import renderRemove from '../../remote/activitypub/renderer/remove';
 import { renderActivity } from '../../remote/activitypub/renderer';
 import { IdentifiableError } from '../../misc/identifiable-error';
-import { deliverToFollowers } from '../../remote/activitypub/deliverer';
+import { deliverToFollowers } from '../../remote/activitypub/deliver-manager';
 
 /**
  * 指定した投稿をピン留めします

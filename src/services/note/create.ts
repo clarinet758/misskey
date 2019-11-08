@@ -36,7 +36,7 @@ import extractEmojis from '../../misc/extract-emojis';
 import extractHashtags from '../../misc/extract-hashtags';
 import { genId } from '../../misc/gen-id';
 import { toDbHost } from '../../misc/convert-host';
-import Deliverer, { deliverToFollowers } from '../../remote/activitypub/deliverer';
+import DeliverManager from '../../remote/activitypub/deliver-manager';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention' | 'highlight';
 
@@ -319,8 +319,6 @@ export default async (user: IUser, data: Option, silent = false) => new Promise<
 
 	const noteActivity = await renderNoteOrRenoteActivity(data, note, user);
 
-	const deliverer = new Deliverer(user, noteActivity);
-
 	// Extended notification
 	if (note.visibility === 'public' || note.visibility === 'home') {
 		nmRelatedPromises.push(notifyExtended(note.text, nm));
@@ -345,10 +343,6 @@ export default async (user: IUser, data: Option, silent = false) => new Promise<
 
 	// mention
 	createMentionedEvents(mentionedUsers, note, nm);
-
-	for (const u of mentionedUsers.filter(u => isRemoteUser(u))) {
-		deliverer.addDirectQueue(u as IRemoteUser);
-	}
 
 	// If it is renote
 	if (data.renote) {
@@ -384,27 +378,40 @@ export default async (user: IUser, data: Option, silent = false) => new Promise<
 
 	if (!silent) {
 		publish(user, note, noteObj, data.reply, data.renote, data.visibleUsers, noteActivity);
-
-		// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
-		if (data.reply && isRemoteUser(data.reply._user)) {
-			deliverer.addDirectQueue(data.reply._user);
-		}
-
-		// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
-		if (data.renote && isRemoteUser(data.renote._user)) {
-			deliverer.addDirectQueue(data.renote._user);
-		}
-
-		if (['public', 'home', 'followers'].includes(note.visibility)) {
-			deliverer.addFollowersQueue();
-		}
 	}
 
 	Promise.all(nmRelatedPromises).then(() => {
 		nm.deliver();
 	});
 
-	deliverer.execute();
+	// AP deliver
+	if (isLocalUser(user)) {
+		const dm = new DeliverManager(user, noteActivity);
+
+		// メンションされたリモートユーザーに配送
+		for (const u of mentionedUsers.filter(u => isRemoteUser(u))) {
+			dm.addDirectQueue(u as IRemoteUser);
+		}
+
+		if (!silent) {
+			// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
+			if (data.reply && isRemoteUser(data.reply._user)) {
+				dm.addDirectQueue(data.reply._user);
+			}
+
+			// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
+			if (data.renote && isRemoteUser(data.renote._user)) {
+				dm.addDirectQueue(data.renote._user);
+			}
+
+			// フォロワーへ配送
+			if (['public', 'home', 'followers'].includes(note.visibility)) {
+				dm.addFollowersQueue();
+			}
+		}
+
+		dm.execute();
+	}
 
 	// Register to search database
 	index(note);

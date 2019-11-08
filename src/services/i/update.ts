@@ -3,7 +3,7 @@ import User, { isLocalUser } from '../../models/user';
 import renderPerson from '../../remote/activitypub/renderer/person';
 import renderUpdate from '../../remote/activitypub/renderer/update';
 import { renderActivity } from '../../remote/activitypub/renderer';
-import { deliverToFollowers } from '../../remote/activitypub/deliverer';
+import { deliverToFollowers } from '../../remote/activitypub/deliver-manager';
 
 export async function publishToFollowers(userId: mongo.ObjectID) {
 	const user = await User.findOne({
