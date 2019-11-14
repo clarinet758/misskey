@@ -124,7 +124,7 @@ export async function createNote(value: string | IObject, resolver?: Resolver, s
 			visibility = 'specified';
 			visibleUsers = await Promise.all(to.map(uri => resolvePerson(uri, null, resolver)));
 		}
-}
+	}
 	//#endergion
 
 	const apMentions = await extractMentionedUsers(actor, to, cc, resolver);
