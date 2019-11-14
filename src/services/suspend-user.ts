@@ -1,5 +1,6 @@
-import renderDelete from '../remote/activitypub/renderer/delete';
 import { renderActivity } from '../remote/activitypub/renderer';
+import { renderDelete } from '../remote/activitypub/renderer/delete';
+import { renderTombstone } from '../remote/activitypub/renderer/tombstone';
 import { deliver } from '../queue';
 import config from '../config';
 import User, { IUser, isLocalUser } from '../models/user';
@@ -14,7 +15,8 @@ export async function doPostSuspend(user: IUser) {
 export async function sendDeleteActivity(user: IUser) {
 	if (isLocalUser(user)) {
 		// 知り得る全SharedInboxにDelete配信
-		const content = renderActivity(renderDelete(`${config.url}/users/${user._id}`, user));
+		const formarType = user.isBot ? 'Service' : 'Person';
+		const content = renderActivity(renderDelete(renderTombstone(`${config.url}/users/${user._id}`, formarType), user));
 
 		const queue: string[] = [];
 

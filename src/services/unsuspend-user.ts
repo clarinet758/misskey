@@ -1,4 +1,5 @@
-import renderDelete from '../remote/activitypub/renderer/delete';
+import { renderDelete } from '../remote/activitypub/renderer/delete';
+import { renderTombstone } from '../remote/activitypub/renderer/tombstone';
 import renderUndo from '../remote/activitypub/renderer/undo';
 import { renderActivity } from '../remote/activitypub/renderer';
 import { deliver } from '../queue';
@@ -9,7 +10,8 @@ import Following from '../models/following';
 export async function doPostUnsuspend(user: IUser) {
 	if (isLocalUser(user)) {
 		// 知り得る全SharedInboxにUndo Delete配信
-		const content = renderActivity(renderUndo(renderDelete(`${config.url}/users/${user._id}`, user), user));
+		const formarType = user.isBot ? 'Service' : 'Person';
+		const content = renderActivity(renderUndo(renderDelete(renderTombstone(`${config.url}/users/${user._id}`, formarType), user), user));
 
 		const queue: string[] = [];
 

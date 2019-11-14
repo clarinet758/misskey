@@ -17,6 +17,8 @@ import Following from './activitypub/following';
 import Featured from './activitypub/featured';
 import { inbox as processInbox } from '../queue';
 import { isSelfHost } from '../misc/convert-host';
+import { renderTombstone } from '../remote/activitypub/renderer/tombstone';
+import config from '../config';
 
 // Init router
 const router = new Router();
@@ -83,12 +85,11 @@ router.get('/notes/:note', async (ctx, next) => {
 
 	const note = await Note.findOne({
 		_id: new ObjectID(ctx.params.note),
-		deletedAt: { $exists: false },
 		visibility: { $in: ['public', 'home'] },
 		localOnly: { $ne: true }
 	});
 
-	if (note == null || !await isNoteUserAvailable(note)) {
+	if (note == null) {
 		ctx.status = 404;
 		return;
 	}
@@ -103,7 +104,12 @@ router.get('/notes/:note', async (ctx, next) => {
 		return;
 	}
 
-	ctx.body = renderActivity(await renderNote(note, false));
+	if (!await isNoteUserAvailable(note) || note.deletedAt) {
+		ctx.body = renderActivity(await renderTombstone(`${config.url}/notes/${note._id}`, 'Note'));
+	} else {
+		ctx.body = renderActivity(await renderNote(note, false));
+	}
+
 	ctx.set('Cache-Control', 'public, max-age=180');
 	setResponseType(ctx);
 });
@@ -156,9 +162,6 @@ router.get('/users/:user/publickey', async ctx => {
 
 	const user = await User.findOne({
 		_id: userId,
-		isDeleted: { $ne: true },
-		isSuspended: { $ne: true },
-		noFederation: { $ne: true },
 		host: null
 	});
 
@@ -183,7 +186,12 @@ async function userInfo(ctx: Router.IRouterContext, user: IUser) {
 		return;
 	}
 
-	ctx.body = renderActivity(await renderPerson(user as ILocalUser));
+	if (user.isDeleted || user.isSuspended || user.noFederation) {
+		ctx.body = renderActivity(await renderTombstone(`${config.url}/users/${user._id}`, user.isBot ? 'Service' : 'Person'));
+	} else {
+		ctx.body = renderActivity(await renderPerson(user as ILocalUser));
+	}
+
 	ctx.set('Cache-Control', 'public, max-age=180');
 	setResponseType(ctx);
 }
@@ -200,9 +208,6 @@ router.get('/users/:user', async (ctx, next) => {
 
 	const user = await User.findOne({
 		_id: userId,
-		isDeleted: { $ne: true },
-		isSuspended: { $ne: true },
-		noFederation: { $ne: true },
 		host: null
 	});
 
@@ -214,9 +219,6 @@ router.get('/@:user', async (ctx, next) => {
 
 	const user = await User.findOne({
 		usernameLower: ctx.params.user.toLowerCase(),
-		isDeleted: { $ne: true },
-		isSuspended: { $ne: true },
-		noFederation: { $ne: true },
 		host: null
 	});
 
