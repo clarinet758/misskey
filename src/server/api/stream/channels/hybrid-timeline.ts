@@ -104,6 +104,7 @@ export default class extends Channel {
 				)) return;
 			}
 		} catch (e) {
+			console.log(e);
 			console.log(JSON.stringify(note, null, 2));
 		}
 
