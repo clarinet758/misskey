@@ -139,7 +139,7 @@ export default define(meta, async (ps, user) => {
 		'_user.host': null,
 
 		// リプライでない
-		replyId: null,
+		//replyId: null,
 
 		// public only
 		visibility: 'public',
