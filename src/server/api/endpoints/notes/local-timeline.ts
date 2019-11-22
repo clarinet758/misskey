@@ -258,10 +258,7 @@ export default define(meta, async (ps, user) => {
 
 	const timeline = await Note.find(query, {
 		limit: ps.limit,
-		sort: sort,
-		hint: {
-			replyId: 1
-		}
+		sort: sort
 	});
 
 	if (user) {
