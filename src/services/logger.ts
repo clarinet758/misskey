@@ -31,8 +31,8 @@ export default class Logger {
 		this.store = store;
 
 		if (config.syslog) {
-			this.syslogClient = new SyslogPro.RFC5424({
-				applacationName: 'Misskey',
+			const opts = {
+				applacationName: `Misskey (${config.host})`,
 				timestamp: true,
 				encludeStructuredData: true,
 				color: true,
@@ -41,7 +41,9 @@ export default class Logger {
 					target: config.syslog.host,
 					port: config.syslog.port,
 				}
-			});
+			};
+
+			this.syslogClient = config.syslog.format === 'rfc5424' ? new SyslogPro.RFC5424(opts) : new SyslogPro.RFC3164(opts);
 		}
 	}
 
@@ -51,7 +53,7 @@ export default class Logger {
 		return logger;
 	}
 
-	private log(level: Level, message: string, data?: Record<string, any> | null, important = false, subDomains: Domain[] = [], store = true): void {
+	private async log(level: Level, message: string, data?: Record<string, any> | null, important = false, subDomains: Domain[] = [], store = true): Promise<void> {
 		if (program.quiet) return;
 		if (!this.store) store = false;
 
@@ -85,15 +87,20 @@ export default class Logger {
 
 		if (store) {
 			if (this.syslogClient) {
-				const send =
-					level === 'error' ? this.syslogClient.error :
-					level === 'warning' ? this.syslogClient.warning :
-					level === 'success' ? this.syslogClient.info :
-					level === 'debug' ? this.syslogClient.info :
-					level === 'info' ? this.syslogClient.info :
-					null as never;
 
-				send(message);
+				switch (level) {
+					case 'error':
+						this.syslogClient.error.bind(this.syslogClient)(message);
+						break;
+					case 'warning':
+						this.syslogClient.warning.bind(this.syslogClient)(message);
+						break;
+					case 'success':
+					case 'debug':
+					case 'info':
+						this.syslogClient.info.bind(this.syslogClient)(message);
+						break;
+				}
 			} else {
 				const Logs = getRepository(Log);
 				Logs.insert({

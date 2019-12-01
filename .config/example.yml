@@ -132,6 +132,7 @@ autoAdmin: true
 #syslog:
 #  host: localhost
 #  port: 514
+#  format: rfc3164 # rfc3164 or rfc5424
 
 # Proxy for HTTP/HTTPS
 #proxy: http://127.0.0.1:3128

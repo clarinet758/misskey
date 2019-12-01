@@ -51,6 +51,7 @@ export type Source = {
 	syslog: {
 		host: string;
 		port: number;
+		format?: string;
 	};
 };
 
