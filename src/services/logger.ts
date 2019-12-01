@@ -87,7 +87,6 @@ export default class Logger {
 
 		if (store) {
 			if (this.syslogClient) {
-
 				switch (level) {
 					case 'error':
 						this.syslogClient.error.bind(this.syslogClient)(message);
