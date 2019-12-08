@@ -5,8 +5,8 @@ import authenticate from './authenticate';
 import call from './call';
 import { ApiError } from './error';
 
-export default (endpoint: IEndpoint, ctx: Koa.BaseContext) => new Promise((res) => {
-	const body = ctx.is('multipart/form-data') ? (ctx.req as any).body
+export default (endpoint: IEndpoint, ctx: Koa.Context) => new Promise((res) => {
+	const body = ctx.is('multipart/form-data') ? ctx.request.body
 		: ctx.method === 'GET' ? ctx.query
 		: ctx.request.body;
 
