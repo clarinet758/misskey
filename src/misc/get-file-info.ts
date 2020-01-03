@@ -15,6 +15,7 @@ export type FileInfo = {
 	width?: number;
 	height?: number;
 	avgColor?: number[];
+	warnings: string[];
 };
 
 const TYPE_OCTET_STREAM = {
@@ -31,6 +32,8 @@ const TYPE_SVG = {
  * Get file information
  */
 export async function getFileInfo(path: string): Promise<FileInfo> {
+	const warnings = [] as string[];
+
 	const size = await getFileSize(path);
 	const md5 = await calcHash(path);
 
@@ -41,10 +44,14 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
 	let height = undefined as number;
 
 	if (['image/jpeg', 'image/gif', 'image/png', 'image/apng', 'image/webp', 'image/bmp', 'image/tiff', 'image/svg+xml', 'image/vnd.adobe.photoshop'].includes(type.mime)) {
-		const imageSize = await detectImageSize(path).catch(() => undefined);
+		const imageSize = await detectImageSize(path).catch(e => {
+			warnings.push(`detectImageSize failed: ${e}`);
+			return undefined;
+		});
 
 		// うまく判定できない画像は octet-stream にする
 		if (!imageSize) {
+			warnings.push(`cannot detect image dimensions`);
 			type = TYPE_OCTET_STREAM;
 		} else if (imageSize.wUnits === 'px') {
 			width = imageSize.width;
@@ -52,8 +59,11 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
 
 			// 制限を超えている画像は octet-stream にする
 			if (imageSize.width > 16383 || imageSize.height > 16383) {
+				warnings.push(`image dimensions exceeds limits`);
 				type = TYPE_OCTET_STREAM;
 			}
+		} else {
+			warnings.push(`unsupported unit type: ${imageSize.wUnits}`);
 		}
 	}
 
@@ -61,7 +71,10 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
 	let avgColor = undefined as number[];
 
 	if (['image/jpeg', 'image/gif', 'image/png', 'image/webp'].includes(type.mime)) {
-		avgColor = await calcAvgColor(path).catch(() => undefined);
+		avgColor = await calcAvgColor(path).catch(e => {
+			warnings.push(`calcAvgColor failed: ${e}`);
+			return undefined;
+		});
 	}
 
 	return {
@@ -71,6 +84,7 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
 		width,
 		height,
 		avgColor,
+		warnings: warnings,
 	};
 }
 
