@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import * as fileType from 'file-type';
-import checkSvg from '../misc/check-svg';
+import checkSvg from './check-svg';
 const probeImageSize = require('probe-image-size');
 import * as sharp from 'sharp';
 
@@ -71,28 +71,7 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
 	};
 }
 
-export async function detectMine(path: string) {
-	let type = await detectType(path);
-
-	// 可能ならば画像のサイズチェックを行う
-	if (['image/jpeg', 'image/gif', 'image/png', 'image/apng', 'image/webp', 'image/bmp', 'image/tiff', 'image/svg+xml', 'image/vnd.adobe.photoshop'].includes(type.mime)) {
-		const imageSize = await detectImageSize(path).catch(() => null);
-
-		// うまく判定できない画像は octet-stream にする
-		if (!imageSize) {
-			type = TYPE_OCTET_STREAM;
-		}
-
-		// 制限を超えている画像は octet-stream にする
-		if (imageSize.wUnits === 'px' && (imageSize.width > 16383 || imageSize.height > 16383)) {
-			type = TYPE_OCTET_STREAM;
-		}
-	}
-
-	return [type.mime, type.ext];
-}
-
-async function detectType(path: string) {
+export async function detectType(path: string) {
 	// Check 0 byte
 	const fileSize = await getFileSize(path);
 	if (fileSize === 0) {

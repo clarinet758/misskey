@@ -20,7 +20,7 @@ import { driveLogger } from './logger';
 import { IImage, ConvertToJpeg, ConvertToWebp, ConvertToPng } from './image-processor';
 import Instance from '../../models/instance';
 import { contentDisposition } from '../../misc/content-disposition';
-import { getFileInfo } from '../../misc/detect-mine';
+import { getFileInfo } from '../../misc/get-file-info';
 import { DriveConfig } from '../../config/types';
 import { getDriveConfig } from '../../misc/get-drive-config';
 import * as S3 from 'aws-sdk/clients/s3';
