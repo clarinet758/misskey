@@ -139,8 +139,8 @@ describe('Get file info', () => {
 		const info = await getFileInfo(path);
 		delete info.warnings;
 		assert.deepStrictEqual(info, {
-			size: 607576,
-			md5: '66ce8e608216689dd26935884e0ed988',
+			size: 75933,
+			md5: '268c5dde99e17cf8fe09f1ab3f97df56',
 			type: {
 				mime: 'application/octet-stream',
 				ext: null
