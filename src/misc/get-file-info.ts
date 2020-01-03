@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import * as fileType from 'file-type';
-import checkSvg from './check-svg';
+import isSvg from 'is-svg';
 const probeImageSize = require('probe-image-size');
 import * as sharp from 'sharp';
 
@@ -27,6 +27,9 @@ const TYPE_SVG = {
 	ext: 'svg'
 };
 
+/**
+ * Get file information
+ */
 export async function getFileInfo(path: string): Promise<FileInfo> {
 	const size = await getFileSize(path);
 	const md5 = await calcHash(path);
@@ -71,6 +74,9 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
 	};
 }
 
+/**
+ * Detect MIME Type and extension
+ */
 export async function detectType(path: string) {
 	// Check 0 byte
 	const fileSize = await getFileSize(path);
@@ -84,7 +90,7 @@ export async function detectType(path: string) {
 
 	if (type) {
 		// XMLはSVGかもしれない
-		if (type.mime === 'application/xml' && checkSvg(path)) {
+		if (type.mime === 'application/xml' && await checkSvg(path)) {
 			return TYPE_SVG;
 		}
 
@@ -95,7 +101,7 @@ export async function detectType(path: string) {
 	}
 
 	// 種類が不明でもSVGかもしれない
-	if (checkSvg(path)) {
+	if (await checkSvg(path)) {
 		return TYPE_SVG;
 	}
 
@@ -103,7 +109,23 @@ export async function detectType(path: string) {
 	return TYPE_OCTET_STREAM;
 }
 
-async function getFileSize(path: string): Promise<number> {
+/**
+ * Check the file is SVG or not
+ */
+export async function checkSvg(path: string) {
+	try {
+		const size = await getFileSize(path);
+		if (size > 1 * 1024 * 1024) return false;
+		return isSvg(fs.readFileSync(path));
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Get file size
+ */
+export async function getFileSize(path: string): Promise<number> {
 	return new Promise<number>((res, rej) => {
 		fs.stat(path, (err, stats) => {
 			if (err) return rej(err);
@@ -112,6 +134,9 @@ async function getFileSize(path: string): Promise<number> {
 	});
 }
 
+/**
+ * Calculate MD5 hash
+ */
 async function calcHash(path: string): Promise<string> {
 	return new Promise<string>((res, rej) => {
 		const readable = fs.createReadStream(path);
@@ -129,6 +154,9 @@ async function calcHash(path: string): Promise<string> {
 	});
 }
 
+/**
+ * Detect dimensions of image
+ */
 async function detectImageSize(path: string): Promise<{
 	width: number;
 	height: number;
@@ -141,6 +169,9 @@ async function detectImageSize(path: string): Promise<{
 	return imageSize;
 }
 
+/**
+ * Calculate average color of image
+ */
 async function calcAvgColor(path: string): Promise<number[]> {
 	const img = sharp(path);
 
