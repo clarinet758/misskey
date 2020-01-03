@@ -70,7 +70,7 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
 	// average color
 	let avgColor = undefined as number[];
 
-	if (['image/jpeg', 'image/gif', 'image/png', 'image/webp'].includes(type.mime)) {
+	if (['image/jpeg', 'image/gif', 'image/png', 'image/apng', 'image/webp'].includes(type.mime)) {
 		avgColor = await calcAvgColor(path).catch(e => {
 			warnings.push(`calcAvgColor failed: ${e}`);
 			return undefined;
