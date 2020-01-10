@@ -1,28 +1,24 @@
 import * as mongo from 'mongodb';
-import Note from '../../../models/note';
+import Note, { INote } from '../../../models/note';
 import { IRemoteUser } from '../../../models/user';
-import { ILike } from '../type';
+import { ILike, getApId } from '../type';
 import create from '../../../services/note/reaction/create';
 import { isSelfHost, extractApHost } from '../../../misc/convert-host';
-import { apLogger } from '../logger';
+import { fetchNote } from '../models/note';
 
 export default async (actor: IRemoteUser, activity: ILike) => {
-	const id = typeof activity.object == 'string' ? activity.object : activity.object.id;
+	const id = getApId(activity.object);
 
-	if (!isSelfHost(extractApHost(id))) {
-		apLogger.warn(`skip Like to foreign host (${id})`);
-		return;
+	let note: INote;
+
+	if (isSelfHost(extractApHost(id))) {
+		const noteId = new mongo.ObjectID(id.split('/').pop());
+		note = await Note.findOne({ _id: noteId });
+		if (note == null) return `skip: Like to unknown local post`;
+	} else {
+		note = await fetchNote(id);
+		if (note == null) return `skip: Like to unreceived remote post`;
 	}
 
-	// Transform:
-	// https://misskey.ex/notes/xxxx to
-	// xxxx
-	const noteId = new mongo.ObjectID(id.split('/').pop());
-
-	const note = await Note.findOne({ _id: noteId });
-	if (note === null) {
-		throw new Error();
-	}
-
-	await create(actor, note, activity._misskey_reaction);
+	return await create(actor, note, activity._misskey_reaction);
 };
