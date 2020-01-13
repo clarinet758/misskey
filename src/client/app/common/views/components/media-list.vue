@@ -7,10 +7,21 @@
 		<div :data-count="mediaList.filter(media => previewable(media)).length" ref="grid">
 			<template v-for="media in mediaList">
 				<mk-media-video :video="media" :key="media.id" v-if="media.type.startsWith('video')"/>
-				<x-image :image="media" :key="media.id" v-else-if="media.type.startsWith('image')" :hide="hide"/>
+				<x-image :image="media" :key="media.id" v-else-if="media.type.startsWith('image')" :hide="hide" :index="i - [...mediaList].splice(0, i).filter(isVideo).length"/>
 			</template>
 		</div>
 	</div>
+	<button @click="imageViewerFlag = true">x</button>
+	<image-viewer-vue 
+		v-if="imageViewerFlag" 
+		@closeImageViewer="imageViewerFlag = false" 
+		@clickImage="clickImage"
+		:imgUrlList="imgUrlList"
+		:index="currentIndex"
+		:title="title"
+		:closable="true"
+		:cyclical="true">
+	</image-viewer-vue>
 </div>
 </template>
 
@@ -32,9 +43,24 @@ export default Vue.extend({
 			type: Boolean,
 			required: false,
 			default: true
+		}
+	},
+	data() {
+		return {
+			imageViewerFlag: false,
+			currentIndex: 0,
+			title: '',
+		}
+	},
+	computed: {
+		imgUrlList(): string[] {
+			return this.images.map(x => x.url);
 		},
-		raw: {
-			default: false
+		images(): any[] {
+			return (this.mediaList as { type: string }[]).filter(this.isImage);
+		},
+		count(): number {
+			return (this.mediaList as { type: string }[]).filter(this.previewable).length;
 		}
 	},
 	mounted() {
@@ -46,8 +72,17 @@ export default Vue.extend({
 		//#endregion
 	},
 	methods: {
-		previewable(file) {
-			return file.type.startsWith('video') || file.type.startsWith('image');
+		isImage(file: { type: string }) {
+			return file.type.startsWith('image');
+		},
+		isVideo(file: { type: string }) {
+			return file.type.startsWith('video') || file.type.startsWith('audio');
+		},
+		previewable(file: { type: string }) {
+			return this.isImage(file) || this.isVideo(file);
+		},
+		clickImage: function(index){
+			console.log(index)
 		}
 	}
 });
