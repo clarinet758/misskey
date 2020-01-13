@@ -5,23 +5,14 @@
 	</template>
 	<div v-if="mediaList.filter(media => previewable(media)).length > 0" class="gird-container">
 		<div :data-count="mediaList.filter(media => previewable(media)).length" ref="grid">
-			<template v-for="media in mediaList">
+			<template v-for="(media, i) in mediaList">
 				<mk-media-video :video="media" :key="media.id" v-if="media.type.startsWith('video')"/>
-				<x-image :image="media" :key="media.id" v-else-if="media.type.startsWith('image')" :hide="hide" :index="i - [...mediaList].splice(0, i).filter(isVideo).length"/>
+				<x-image :image="media" :key="media.id" v-else-if="media.type.startsWith('image')" :hide="hide" 
+					@imageClick="showImage(i - [...mediaList].splice(0, i).filter(isVideo).length)"/>
 			</template>
 		</div>
 	</div>
-	<button @click="imageViewerFlag = true">x</button>
-	<image-viewer-vue 
-		v-if="imageViewerFlag" 
-		@closeImageViewer="imageViewerFlag = false" 
-		@clickImage="clickImage"
-		:imgUrlList="imgUrlList"
-		:index="currentIndex"
-		:title="title"
-		:closable="true"
-		:cyclical="true">
-	</image-viewer-vue>
+	<ImageBox v-if="imgList.length > 0" :images="imgList" :index="index" @close="index = null" :bgcolor="bgcolor"/>
 </div>
 </template>
 
@@ -29,11 +20,13 @@
 import Vue from 'vue';
 import XBanner from './media-banner.vue';
 import XImage from './media-image.vue';
+import ImageBox from "vue-image-box";
 
 export default Vue.extend({
 	components: {
 		XBanner,
-		XImage
+		XImage,
+		ImageBox
 	},
 	props: {
 		mediaList: {
@@ -47,14 +40,18 @@ export default Vue.extend({
 	},
 	data() {
 		return {
-			imageViewerFlag: false,
-			currentIndex: 0,
-			title: '',
+			index: null,
+			bgcolor: "rgba(51, 51, 51, .9)",
 		}
 	},
 	computed: {
-		imgUrlList(): string[] {
-			return this.images.map(x => x.url);
+		imgList(): any[] {
+			return this.images
+				.map(x => ({
+					imageUrl: x.url,
+					thumbUrl: x.thumbnailUrl,
+					caption: x.nane,
+				}));
 		},
 		images(): any[] {
 			return (this.mediaList as { type: string }[]).filter(this.isImage);
@@ -72,6 +69,9 @@ export default Vue.extend({
 		//#endregion
 	},
 	methods: {
+		showImage(i: number) {
+			this.index = i;
+		},
 		isImage(file: { type: string }) {
 			return file.type.startsWith('image');
 		},
@@ -81,9 +81,6 @@ export default Vue.extend({
 		previewable(file: { type: string }) {
 			return this.isImage(file) || this.isVideo(file);
 		},
-		clickImage: function(index){
-			console.log(index)
-		}
 	}
 });
 </script>

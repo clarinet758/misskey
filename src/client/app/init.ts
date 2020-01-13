@@ -9,7 +9,6 @@ import VAnimateCss from 'v-animate-css';
 import VModal from 'vue-js-modal';
 import VueI18n from 'vue-i18n';
 import SequentialEntrance from 'vue-sequential-entrance';
-import imageViewer from 'image-viewer-vue';
 
 import VueHotkey from './common/hotkey';
 import VueSize from './common/size';
@@ -297,7 +296,6 @@ Vue.use(VueHotkey);
 Vue.use(VueSize);
 Vue.use(VueI18n);
 Vue.use(SequentialEntrance);
-Vue.use(imageViewer);
 
 Vue.component('fa', FontAwesomeIcon);
 
