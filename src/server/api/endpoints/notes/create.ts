@@ -90,7 +90,21 @@ export const meta = {
 			validator: $.optional.bool,
 			default: false,
 			desc: {
-				'ja-JP': 'copyOnce'
+				'ja-JP': 'リモートに配信する際の公開範囲をフォロワー限定にします。specified+これにするとリモートフォロワーのみになります。'
+			}
+		},
+
+		deliverHosts: {
+			validator: $.optional.arr($.str),
+			desc: {
+				'ja-JP': 'リモートに配信する際のホストをこの一覧に制限します。'
+			}
+		},
+
+		deliverSoftwares: {
+			validator: $.optional.arr($.str),
+			desc: {
+				'ja-JP': 'リモートに配信する際のソフトウェアをこの一覧に制限します。'
 			}
 		},
 
@@ -341,6 +355,8 @@ export default define(meta, async (ps, user, app) => {
 		viaMobile: ps.viaMobile,
 		localOnly: ps.localOnly,
 		copyOnce: ps.copyOnce,
+		deliverHosts: ps.deliverHosts,
+		deliverSoftwares: ps.deliverSoftwares,
 		visibility: ps.visibility,
 		visibleUsers,
 		apMentions: ps.noExtractMentions ? [] : undefined,

@@ -1,6 +1,8 @@
 import { isRemoteUser, IRemoteUser, isLocalUser, ILocalUser } from '../../models/user';
 import Following from '../../models/following';
 import { deliver } from '../../queue';
+import Instance from '../../models/instance';
+import { toApHost } from '../../misc/convert-host';
 
 //#region types
 interface IRecipe {
@@ -9,6 +11,8 @@ interface IRecipe {
 
 interface IFollowersRecipe extends IRecipe {
 	type: 'Followers';
+	limitHosts?: string[];
+	limitSofts?: string[];
 }
 
 interface IDirectRecipe extends IRecipe {
@@ -41,9 +45,11 @@ export default class DeliverManager {
 	/**
 	 * Add recipe for followers deliver
 	 */
-	public addFollowersRecipe() {
+	public addFollowersRecipe(limitHosts?: string[], limitSofts?: string[]) {
 		const deliver = {
-			type: 'Followers'
+			type: 'Followers',
+			limitHosts,
+			limitSofts,
 		} as IFollowersRecipe;
 
 		this.addRecipe(deliver);
@@ -91,6 +97,26 @@ export default class DeliverManager {
 
 					if (isRemoteUser(follower)) {
 						const inbox = follower.sharedInbox || follower.inbox;
+
+						if (recipe.limitHosts && recipe.limitHosts.length > 0) {
+							const url = new URL(inbox);
+							if (!recipe.limitHosts.includes(url.host)) {
+								continue;
+							}
+						}
+
+						if (recipe.limitSofts && recipe.limitSofts.length > 0) {
+							const url = new URL(inbox);
+
+							const instances = await Instance.find({
+								softwareName: { $in: recipe.limitSofts }
+							});
+
+							if (!instances.map(x => toApHost(x.host)).includes(url.host)) {
+								continue;
+							}
+						}
+
 						if (!inboxes.includes(inbox)) inboxes.push(inbox);
 					}
 				}

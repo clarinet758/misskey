@@ -57,6 +57,8 @@ export type INote = {
 	viaMobile: boolean;
 	localOnly: boolean;
 	copyOnce?: boolean;
+	deliverHosts?: string[];
+	deliverSoftwares?: string[];
 	renoteCount: number;
 	repliesCount: number;
 	reactionCounts: Record<string, number>;
@@ -294,6 +296,8 @@ export const pack = async (
 	delete _note._files;
 	delete _note._replyIds;
 	delete _note.mentionedRemoteUsers;
+	delete _note.deliverHosts;
+	delete _note.deliverSoftwares;
 
 	if (_note.geo) delete _note.geo.type;
 

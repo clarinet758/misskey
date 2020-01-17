@@ -441,6 +441,7 @@ export default (opts) => ({
 				visibleUserIds: visibility == 'specified' ? this.visibleUsers.map(u => u.id) : undefined,
 				localOnly,
 				copyOnce,
+				deliverHosts: this.deliverHosts,
 				viaMobile,
 				geo: null
 			}).then(data => {

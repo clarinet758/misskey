@@ -34,6 +34,7 @@ import extractEmojis from '../../misc/extract-emojis';
 import extractHashtags from '../../misc/extract-hashtags';
 import { genId } from '../../misc/gen-id';
 import DeliverManager from '../../remote/activitypub/deliver-manager';
+import { toApHost } from '../../misc/convert-host';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention' | 'highlight';
 
@@ -101,6 +102,8 @@ type Option = {
 	viaMobile?: boolean;
 	localOnly?: boolean;
 	copyOnce?: boolean;
+	deliverHosts?: string[];
+	deliverSoftwares?: string[];
 	cw?: string;
 	visibility?: string;
 	visibleUsers?: IUser[];
@@ -121,6 +124,8 @@ export default async (user: IUser, data: Option, silent = false) => new Promise<
 	if (data.viaMobile == null) data.viaMobile = false;
 	if (data.localOnly == null) data.localOnly = false;
 	if (data.copyOnce == null) data.copyOnce = false;
+	data.deliverHosts = data.deliverHosts?.map(x => toApHost(x));
+	data.deliverSoftwares = data.deliverSoftwares?.map(x => x.toLowerCase());
 
 	if (data.visibleUsers) {
 		data.visibleUsers = erase(null, data.visibleUsers);
@@ -379,12 +384,12 @@ export default async (user: IUser, data: Option, silent = false) => new Promise<
 
 				// フォロワーへ配送
 				if (['public', 'home', 'followers'].includes(note.visibility)) {
-					dm.addFollowersRecipe();
+					dm.addFollowersRecipe(note.deliverHosts, note.deliverSoftwares);
 				}
 
 				// リモートのみ配送
 				if (note.visibility === 'specified' && note.copyOnce) {
-					dm.addFollowersRecipe();
+					dm.addFollowersRecipe(note.deliverHosts, note.deliverSoftwares);
 				}
 			}
 
@@ -448,6 +453,7 @@ async function insertNote(user: IUser, data: Option, tags: string[], emojis: str
 		viaMobile: data.viaMobile,
 		localOnly: data.localOnly,
 		copyOnce: data.copyOnce,
+		deliverHosts: data.deliverHosts,
 		geo: data.geo || null,
 		appId: data.app ? data.app._id : null,
 		visibility: data.visibility,
