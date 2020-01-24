@@ -1,4 +1,4 @@
-import * as Koa from 'koa';
+import * as Router from 'koa-router';
 import * as bcrypt from 'bcryptjs';
 import { generateKeyPair } from 'crypto';
 import generateUserToken from '../common/generate-native-user-token';
@@ -15,7 +15,7 @@ import { UserProfile } from '../../../models/entities/user-profile';
 import { getConnection } from 'typeorm';
 import { UsedUsername } from '../../../models/entities/used-username';
 
-export default async (ctx: Koa.Context) => {
+export default async (ctx: Router.RouterContext) => {
 	const body = ctx.request.body;
 
 	const instance = await fetchMeta(true);

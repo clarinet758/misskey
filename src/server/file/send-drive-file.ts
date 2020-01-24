@@ -1,4 +1,4 @@
-import * as Koa from 'koa';
+import * as Router from 'koa-router';
 import * as send from 'koa-send';
 import * as rename from 'rename';
 import * as tmp from 'tmp';
@@ -14,13 +14,13 @@ import { GenerateVideoThumbnail } from '../../services/drive/generate-video-thum
 
 const assets = `${__dirname}/../../server/file/assets/`;
 
-const commonReadableHandlerGenerator = (ctx: Koa.Context) => (e: Error): void => {
+const commonReadableHandlerGenerator = (ctx: Router.RouterContext) => (e: Error): void => {
 	serverLogger.error(e);
 	ctx.status = 500;
 	ctx.set('Cache-Control', 'max-age=300');
 };
 
-export default async function(ctx: Koa.Context) {
+export default async function(ctx: Router.RouterContext) {
 	const key = ctx.params.key;
 
 	// Fetch drive file

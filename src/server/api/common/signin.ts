@@ -1,4 +1,4 @@
-import * as Koa from 'koa';
+import * as Router from 'koa-router';
 
 import config from '../../../config';
 import { ILocalUser } from '../../../models/entities/user';
@@ -6,7 +6,7 @@ import { Signins } from '../../../models';
 import { genId } from '../../../misc/gen-id';
 import { publishMainStream } from '../../../services/stream';
 
-export default function(ctx: Koa.Context, user: ILocalUser, redirect = false) {
+export default function(ctx: Router.RouterContext, user: ILocalUser, redirect = false) {
 	if (redirect) {
 		//#region Cookie
 		const expires = 1000 * 60 * 60 * 24 * 365; // One Year

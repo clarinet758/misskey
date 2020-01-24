@@ -1,4 +1,4 @@
-import * as Koa from 'koa';
+import * as Router from 'koa-router';
 import * as bcrypt from 'bcryptjs';
 import * as speakeasy from 'speakeasy';
 import signin from '../common/signin';
@@ -10,7 +10,7 @@ import { ensure } from '../../../prelude/ensure';
 import { verifyLogin, hash } from '../2fa';
 import { randomBytes } from 'crypto';
 
-export default async (ctx: Koa.Context) => {
+export default async (ctx: Router.RouterContext) => {
 	ctx.set('Access-Control-Allow-Origin', config.url);
 	ctx.set('Access-Control-Allow-Credentials', 'true');
 

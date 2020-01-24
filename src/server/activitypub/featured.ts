@@ -1,4 +1,4 @@
-import * as Router from '@koa/router';
+import * as Router from 'koa-router';
 import config from '../../config';
 import { renderActivity } from '../../remote/activitypub/renderer';
 import renderOrderedCollection from '../../remote/activitypub/renderer/ordered-collection';
