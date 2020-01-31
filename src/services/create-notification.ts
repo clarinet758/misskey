@@ -43,6 +43,15 @@ export async function createNotification(
 
 	const packed = await Notifications.pack(notification);
 
+	//#region ただしミュートしているユーザーからの通知なら無視
+	const mutings = await Mutings.find({
+		muterId: notifieeId
+	});
+	if (mutings.map(m => m.muteeId).includes(notifierId)) {
+		return;
+	}
+	//#endregion
+
 	// Publish notification event
 	publishMainStream(notifieeId, 'notification', packed);
 
@@ -51,15 +60,6 @@ export async function createNotification(
 		const fresh = await Notifications.findOne(notification.id);
 		if (fresh == null) return; // 既に削除されているかもしれない
 		if (!fresh.isRead) {
-			//#region ただしミュートしているユーザーからの通知なら無視
-			const mutings = await Mutings.find({
-				muterId: notifieeId
-			});
-			if (mutings.map(m => m.muteeId).includes(notifierId)) {
-				return;
-			}
-			//#endregion
-
 			publishMainStream(notifieeId, 'unreadNotification', packed);
 
 			pushSw(notifieeId, 'notification', packed);
