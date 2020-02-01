@@ -280,6 +280,7 @@
 	{ "category": "people", "char": "👯", "name": "dancing_women", "keywords": ["female", "bunny", "women", "girls"] },
 	{ "category": "people", "char": "👯‍♂️", "name": "dancing_men", "keywords": ["male", "bunny", "men", "boys"] },
 	{ "category": "people", "char": "👫", "name": "couple", "keywords": ["pair", "people", "human", "love", "date", "dating", "like", "affection", "valentines", "marriage"] },
+	{ "category": "people", "char": "\uD83E\uDDD1\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1", "name": "people_holding_hands", "keywords": ["pair", "couple", "love", "like", "bromance", "friendship", "people", "human"] },
 	{ "category": "people", "char": "👬", "name": "two_men_holding_hands", "keywords": ["pair", "couple", "love", "like", "bromance", "friendship", "people", "man", "human"] },
 	{ "category": "people", "char": "👭", "name": "two_women_holding_hands", "keywords": ["pair", "couple", "love", "like", "bromance", "friendship", "people", "female", "human"] },
 	{ "category": "people", "char": "🙇‍♀️", "name": "bowing_woman", "keywords": ["woman", "female", "girl"] },
